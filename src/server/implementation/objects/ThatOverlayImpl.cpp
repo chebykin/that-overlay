@@ -20,7 +20,18 @@ namespace thatoverlay
 
 ThatOverlayImpl::ThatOverlayImpl (const boost::property_tree::ptree &config, std::shared_ptr<MediaPipeline> mediaPipeline)  : FilterImpl (config, std::dynamic_pointer_cast<MediaObjectImpl>(mediaPipeline)) 
 {
-  // FIXME: Implement this
+  GstElement* sampleplugin;
+
+  g_object_set (element, "filter-factory", "thatoverlay", NULL);
+
+  g_object_get (G_OBJECT (element), "filter", &sampleplugin, NULL);
+
+  if (sampleplugin == NULL) {
+    throw KurentoException (MEDIA_OBJECT_NOT_AVAILABLE,
+                            "Media Object not available");
+  }
+
+  g_object_unref (sampleplugin);
 }
 
 MediaObjectImpl *

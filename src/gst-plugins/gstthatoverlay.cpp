@@ -10,7 +10,7 @@
 
 GST_DEBUG_CATEGORY_STATIC (gst_that_overlay_debug_category);
 #define GST_CAT_DEFAULT gst_that_overlay_debug_category
-#define PLUGIN_NAME ""
+#define PLUGIN_NAME "thatoverlay"
 
 #define GST_THAT_OVERLAY_GET_PRIVATE(obj) (    \
     G_TYPE_INSTANCE_GET_PRIVATE (               \
