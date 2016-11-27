@@ -41,6 +41,13 @@ class ThatOverlayImpl : public FilterImpl, public virtual ThatOverlay
 
 public:
 
+
+typedef struct {
+  gboolean valid;
+  int width;
+  int height;
+} CairoOverlayState;
+
   ThatOverlayImpl (const boost::property_tree::ptree &config, std::shared_ptr<MediaPipeline> mediaPipeline);
 
   virtual ~ThatOverlayImpl () {};
@@ -60,6 +67,9 @@ private:
   public:
     StaticConstructor();
   };
+
+
+CairoOverlayState st;
 
   static StaticConstructor staticConstructor;
 

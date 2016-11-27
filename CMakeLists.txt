@@ -32,8 +32,10 @@ find_package(PkgConfig)
 set (GST_REQUIRED 1.5.0)
 set (GLIB_REQUIRED 2.38)
 set (OPENCV_REQUIRED 2.0.0)
+set (PANGOCAIRO_REQUIRED 0.26)
 
 #gst-plugins dependencies
+pkg_check_modules(PANGOCAIRO REQUIRED pangocairo>=${PANGOCAIRO_REQUIRED})
 pkg_check_modules(GSTREAMER REQUIRED gstreamer-1.5>=${GST_REQUIRED})
 pkg_check_modules(GSTREAMER_BASE REQUIRED gstreamer-base-1.5>=${GST_REQUIRED})
 pkg_check_modules(GSTREAMER_VIDEO REQUIRED gstreamer-video-1.5>=${GST_REQUIRED})
