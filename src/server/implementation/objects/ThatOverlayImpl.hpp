@@ -41,12 +41,20 @@ class ThatOverlayImpl : public FilterImpl, public virtual ThatOverlay
 
 public:
 
+  typedef struct {
+    double r, g, b, a;
+  } RGBA;
 
-typedef struct {
-  gboolean valid;
-  int width;
-  int height;
-} CairoOverlayState;
+  typedef struct {
+    gboolean valid;
+    int width;
+    int height;
+    int frame;
+
+    std::string title, titleFont, watermark, watermarkFont;
+    RGBA titleColor, watermarkColor;
+    int watermarkInterval;
+  } CairoOverlayState;
 
   ThatOverlayImpl (const boost::property_tree::ptree &config, std::shared_ptr<MediaPipeline> mediaPipeline);
 
@@ -68,8 +76,7 @@ private:
     StaticConstructor();
   };
 
-
-CairoOverlayState st;
+  CairoOverlayState st;
 
   static StaticConstructor staticConstructor;
 

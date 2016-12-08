@@ -22,14 +22,13 @@ namespace thatoverlay
 static void
 prepare_overlay (GstElement * overlay, GstCaps * caps, gpointer user_data)
 {
-fprintf(stderr, "prepare\n");
   ThatOverlayImpl::CairoOverlayState *state = (ThatOverlayImpl::CairoOverlayState *)user_data;
-GstVideoInfo info;
+  GstVideoInfo info;
 
-gst_video_info_from_caps (&info, caps);
-state->width = info.width;
-state->height = info.height;
-
+  gst_video_info_from_caps (&info, caps);
+  state->width = info.width;
+  state->height = info.height;
+  state->frame = 0;
   state->valid = TRUE;
 }
 
@@ -37,29 +36,44 @@ static void
 draw_overlay (GstElement * overlay, cairo_t * cr, guint64 timestamp, 
   guint64 duration, gpointer user_data)
 {
-fprintf(stderr, "draw_overlay\n");
   ThatOverlayImpl::CairoOverlayState *s = (ThatOverlayImpl::CairoOverlayState *)user_data;
-  double scale;
 
   if (!s->valid)
     return;
 
-  scale = 2*(((timestamp/(int)1e7) % 70)+30)/100.0;
-  cairo_translate(cr, s->width/2, (s->height/2)-30);
-  cairo_scale (cr, scale, scale);
+  PangoLayout *layout;
+  PangoFontDescription *desc;
 
-  cairo_move_to (cr, 0, 0);
-  cairo_curve_to (cr, 0,-30, -50,-30, -50,0);
-  cairo_curve_to (cr, -50,30, 0,35, 0,60 );
-  cairo_curve_to (cr, 0,35, 50,30, 50,0 ); 
-  cairo_curve_to (cr, 50,-30, 0,-30, 0,0 );
-  cairo_set_source_rgba (cr, 0.9, 0.0, 0.1, 0.7);
-  cairo_fill (cr);
+  layout = pango_cairo_create_layout (cr);
+  cairo_identity_matrix (cr);
+
+  pango_layout_set_text (layout, s->watermark.c_str(), -1);
+  desc = pango_font_description_from_string (s->watermarkFont.c_str());
+  pango_layout_set_font_description (layout, desc);
+  pango_font_description_free (desc);
+  cairo_set_source_rgba (cr, s->watermarkColor.r, s->watermarkColor.g, s->watermarkColor.b, s->watermarkColor.a);
+  pango_cairo_update_layout (cr, layout);
+  cairo_move_to(cr, s->width / 2 + rand() % (s->width / 2), s->width / 2 + rand() % (s->height / 2));
+  pango_cairo_show_layout (cr, layout);
+  g_object_unref (layout);
+
+  layout = pango_cairo_create_layout (cr);
+  cairo_scale (cr, 1, 1);
+  pango_layout_set_text (layout, s->title.c_str(), -1);
+  desc = pango_font_description_from_string (s->titleFont.c_str());
+  pango_layout_set_font_description (layout, desc);
+  pango_font_description_free (desc);
+  cairo_set_source_rgba (cr, s->titleColor.r, s->titleColor.g, s->titleColor.b, s->titleColor.a);
+  cairo_move_to(cr, 2, 2);
+  pango_cairo_update_layout (cr, layout);
+  pango_cairo_show_layout (cr, layout);
+  g_object_unref (layout);
+
+  s->frame++;
 }
 
 ThatOverlayImpl::ThatOverlayImpl (const boost::property_tree::ptree &config, std::shared_ptr<MediaPipeline> mediaPipeline)  : FilterImpl (config, std::dynamic_pointer_cast<MediaObjectImpl>(mediaPipeline)) 
 {
-fprintf(stderr, "ThatOverlayImpl::ThatOverlayImpl\n");
   GstElement* sampleplugin;
 
   g_object_set (element, "filter-factory", "cairooverlay", NULL);
@@ -71,8 +85,24 @@ fprintf(stderr, "ThatOverlayImpl::ThatOverlayImpl\n");
                             "Media Object not available");
   }
 
-g_signal_connect (sampleplugin, "draw", G_CALLBACK (draw_overlay), &this->st);
-g_signal_connect (sampleplugin, "caps-changed",   G_CALLBACK (prepare_overlay), &this->st);
+  st.title = "developer_79756";
+  st.titleFont = "Serif 14";
+  st.watermark = "255.255.255.255\n12JAN2016 23:24Z";
+  st.watermarkFont = "Sans Mono 14";
+
+  st.titleColor.r = 1;
+  st.titleColor.g = 1;
+  st.titleColor.b = 0;
+  st.titleColor.a = 1;
+  st.watermarkColor.r = 1;
+  st.watermarkColor.g = 1;
+  st.watermarkColor.b = 1;
+  st.watermarkColor.a = 0.5;
+
+  st.watermarkInterval = 4;
+
+  g_signal_connect (sampleplugin, "draw", G_CALLBACK (draw_overlay), &this->st);
+  g_signal_connect (sampleplugin, "caps-changed",   G_CALLBACK (prepare_overlay), &this->st);
 
   g_object_unref (sampleplugin);
 }
@@ -80,7 +110,6 @@ g_signal_connect (sampleplugin, "caps-changed",   G_CALLBACK (prepare_overlay), 
 MediaObjectImpl *
 ThatOverlayImplFactory::createObject (const boost::property_tree::ptree &config, std::shared_ptr<MediaPipeline> mediaPipeline) const
 {
-fprintf(stderr, "ThatOverlayImpl::createObject\n");
   return new ThatOverlayImpl (config, mediaPipeline);
 }
 
@@ -88,7 +117,6 @@ ThatOverlayImpl::StaticConstructor ThatOverlayImpl::staticConstructor;
 
 ThatOverlayImpl::StaticConstructor::StaticConstructor()
 {
-fprintf(stderr, "ThatOverlayImpl::StaticConstructor::StaticConstructor\n");
   GST_DEBUG_CATEGORY_INIT (GST_CAT_DEFAULT, GST_DEFAULT_NAME, 0,
                            GST_DEFAULT_NAME);
 }
