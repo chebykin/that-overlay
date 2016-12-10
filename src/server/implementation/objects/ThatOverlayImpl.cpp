@@ -53,7 +53,13 @@ draw_overlay (GstElement * overlay, cairo_t * cr, guint64 timestamp,
   pango_font_description_free (desc);
   cairo_set_source_rgba (cr, s->watermarkColor.r, s->watermarkColor.g, s->watermarkColor.b, s->watermarkColor.a);
   pango_cairo_update_layout (cr, layout);
-  cairo_move_to(cr, s->width / 2 + rand() % (s->width / 2), s->width / 2 + rand() % (s->height / 2));
+  int x = 0, y = 0;
+  while (x < (s->width / 2) && y < 20)
+  {
+    x = rand() % s->width;
+    y = rand() % s->height;
+  }
+  cairo_move_to(cr, x, y);
   pango_cairo_show_layout (cr, layout);
   g_object_unref (layout);
 
@@ -105,6 +111,26 @@ ThatOverlayImpl::ThatOverlayImpl (const boost::property_tree::ptree &config, std
   g_signal_connect (sampleplugin, "caps-changed",   G_CALLBACK (prepare_overlay), &this->st);
 
   g_object_unref (sampleplugin);
+}
+
+void ThatOverlayImpl::setup (const std::string &title, const std::string &titleFont, float tR, float tG, float tB, float tA, const std::string &watermark, const std::string &watermarkFont, float wR, float wG, float wB, float wA, int interval)
+{
+  st.title = title;
+  st.titleFont = titleFont;
+  st.watermark = watermark;
+  st.watermarkFont = watermarkFont;
+
+  st.titleColor.r = tR;
+  st.titleColor.g = tG;
+  st.titleColor.b = tB;
+  st.titleColor.a = tA;
+
+  st.watermarkColor.r = wR;
+  st.watermarkColor.g = wG;
+  st.watermarkColor.b = wB;
+  st.watermarkColor.a = wA;
+
+  st.watermarkInterval = interval;
 }
 
 MediaObjectImpl *
