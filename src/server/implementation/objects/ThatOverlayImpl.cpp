@@ -53,13 +53,18 @@ draw_overlay (GstElement * overlay, cairo_t * cr, guint64 timestamp,
   pango_font_description_free (desc);
   cairo_set_source_rgba (cr, s->watermarkColor.r, s->watermarkColor.g, s->watermarkColor.b, s->watermarkColor.a);
   pango_cairo_update_layout (cr, layout);
-  int x = 0, y = 0;
-  while (x < (s->width / 2) && y < 20)
+  if ((s->frame % s->watermarkInterval) == 0)
   {
-    x = rand() % s->width;
-    y = rand() % s->height;
+    int x = 0, y = 0;
+    while (x < (s->width / 2) && y < 20)
+    {
+      x = rand() % s->width;
+      y = rand() % s->height;
+    }
+    s->watermarkPosition.x = x;
+    s->watermarkPosition.y = y;
   }
-  cairo_move_to(cr, x, y);
+  cairo_move_to(cr, s->watermarkPosition.x, s->watermarkPosition.y);
   pango_cairo_show_layout (cr, layout);
   g_object_unref (layout);
 
@@ -70,7 +75,7 @@ draw_overlay (GstElement * overlay, cairo_t * cr, guint64 timestamp,
   pango_layout_set_font_description (layout, desc);
   pango_font_description_free (desc);
   cairo_set_source_rgba (cr, s->titleColor.r, s->titleColor.g, s->titleColor.b, s->titleColor.a);
-  cairo_move_to(cr, 2, 2);
+  cairo_move_to(cr, s->titlePosition.x, s->titlePosition.y);
   pango_cairo_update_layout (cr, layout);
   pango_cairo_show_layout (cr, layout);
   g_object_unref (layout);
@@ -113,18 +118,19 @@ ThatOverlayImpl::ThatOverlayImpl (const boost::property_tree::ptree &config, std
   g_object_unref (sampleplugin);
 }
 
-void ThatOverlayImpl::setup (const std::string &title, const std::string &titleFont, float tR, float tG, float tB, float tA, const std::string &watermark, const std::string &watermarkFont, float wR, float wG, float wB, float wA, int interval)
+void ThatOverlayImpl::setup (int x, int y, const std::string &title, const std::string &titleFont, float tR, float tG, float tB, float tA, const std::string &watermark, const std::string &watermarkFont, float wR, float wG, float wB, float wA, int interval)
 {
   st.title = title;
   st.titleFont = titleFont;
-  st.watermark = watermark;
-  st.watermarkFont = watermarkFont;
-
+  st.titlePosition.x = x;
+  st.titlePosition.y = y;
   st.titleColor.r = tR;
   st.titleColor.g = tG;
   st.titleColor.b = tB;
   st.titleColor.a = tA;
 
+  st.watermark = watermark;
+  st.watermarkFont = watermarkFont;
   st.watermarkColor.r = wR;
   st.watermarkColor.g = wG;
   st.watermarkColor.b = wB;

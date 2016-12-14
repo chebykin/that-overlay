@@ -21,6 +21,16 @@
           "doc": "Set text, color and font for title and watermark.",
           "params": [
             {
+              "name": "x",
+              "doc": "Title left edge X coordinate.",
+              "type": "int"
+            },
+            {
+              "name": "y",
+              "doc": "Title top edge Y coordinate.",
+              "type": "int"
+            },
+            {
               "name": "title",
               "doc": "",
               "type": "String"

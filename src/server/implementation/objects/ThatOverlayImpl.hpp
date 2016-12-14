@@ -46,6 +46,10 @@ public:
   } RGBA;
 
   typedef struct {
+    int x, y;
+  } Point;
+
+  typedef struct {
     gboolean valid;
     int width;
     int height;
@@ -54,10 +58,11 @@ public:
     std::string title, titleFont, watermark, watermarkFont;
     RGBA titleColor, watermarkColor;
     int watermarkInterval;
+    Point titlePosition, watermarkPosition;
   } CairoOverlayState;
 
   ThatOverlayImpl (const boost::property_tree::ptree &config, std::shared_ptr<MediaPipeline> mediaPipeline);
-  virtual void setup (const std::string &title, const std::string &titleFont, float tR, float tG, float tB, float tA, const std::string &watermark, const std::string &watermarkFont, float wR, float wG, float wB, float wA, int interval) override final;
+  virtual void setup (int x, int y, const std::string &title, const std::string &titleFont, float tR, float tG, float tB, float tA, const std::string &watermark, const std::string &watermarkFont, float wR, float wG, float wB, float wA, int interval) override final;
 
   virtual ~ThatOverlayImpl () {};
 
