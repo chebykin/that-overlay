@@ -13,5 +13,6 @@ include_directories(
 
 target_link_libraries(kmsthatoverlayimpl
   ${PANGOCAIRO_LIBRARIES}
+  ${GSTREAMER_VIDEO_LIBRARIES}
 )
 
