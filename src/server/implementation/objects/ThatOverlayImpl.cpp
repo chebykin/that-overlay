@@ -33,6 +33,13 @@ prepare_overlay (GstElement * overlay, GstCaps * caps, gpointer user_data)
 }
 
 static void
+struprt(char *str)
+{
+    while ((*str = std::toupper(*str)))
+	++str;
+}
+
+static void
 draw_overlay (GstElement * overlay, cairo_t * cr, guint64 timestamp, 
   guint64 duration, gpointer user_data)
 {
@@ -47,7 +54,22 @@ draw_overlay (GstElement * overlay, cairo_t * cr, guint64 timestamp,
   layout = pango_cairo_create_layout (cr);
   cairo_identity_matrix (cr);
 
-  pango_layout_set_text (layout, s->watermark.c_str(), -1);
+  // WARNING: beginning of not optimized, probably buggy code
+  time_t rawtime;
+  struct tm * timeinfo;
+  char buffer [80];
+
+  time(&rawtime);
+  timeinfo = gmtime(&rawtime);
+
+  strftime(buffer, 80, "%d%b%Y %H:%MZ", timeinfo);
+  struprt(buffer);
+
+  std::string t = buffer;
+  std::string watermark = s->watermark + t;
+  // WARNING: end of not optimized, probably buggy code
+
+  pango_layout_set_text (layout, watermark.c_str(), -1);
   desc = pango_font_description_from_string (s->watermarkFont.c_str());
   pango_layout_set_font_description (layout, desc);
   pango_font_description_free (desc);
@@ -58,8 +80,8 @@ draw_overlay (GstElement * overlay, cairo_t * cr, guint64 timestamp,
     int x = 0, y = 0;
     while (x < (s->width / 2) && y < 20)
     {
-      x = rand() % s->width;
-      y = rand() % s->height;
+      x = rand() % s->width / 2;
+      y = rand() % s->height * .8;
     }
     s->watermarkPosition.x = x;
     s->watermarkPosition.y = y;
